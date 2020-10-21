@@ -43,6 +43,7 @@ import {
 } from '../shared/notifications/notification';
 import consumePromise from '../shared/promise';
 import { Scheduler } from '../shared/scheduler';
+import { ISplitTunnelingApplication } from '../shared/split-tunneling-application';
 import AccountDataCache from './account-data-cache';
 import { getOpenAtLogin, setOpenAtLogin } from './autostart';
 import { ConnectionObserver, DaemonRpc, SubscriptionListener } from './daemon-rpc';
@@ -184,6 +185,8 @@ class ApplicationMain {
 
   private autoConnectOnWireguardKeyEvent = false;
   private autoConnectFallbackScheduler = new Scheduler();
+
+  private windowsSplitTunnelingApplications?: ISplitTunnelingApplication[];
 
   public run() {
     // Remove window animations to combat window flickering when opening window. Can be removed when
@@ -669,10 +672,9 @@ class ApplicationMain {
       IpcMainEventChannel.settings.notify(this.windowController.webContents, newSettings);
 
       if (windowsSplitTunneling) {
-        IpcMainEventChannel.windowsSplitTunneling.notify(
-          this.windowController.webContents,
-          await windowsSplitTunneling.getApplications(newSettings.splitTunnelAppsList),
-        );
+        const apps = await windowsSplitTunneling.getApplications(newSettings.splitTunnelAppsList);
+        this.windowsSplitTunnelingApplications = apps;
+        IpcMainEventChannel.windowsSplitTunneling.notify(this.windowController.webContents, apps);
       }
     }
 
@@ -945,6 +947,7 @@ class ApplicationMain {
       upgradeVersion: this.upgradeVersion,
       guiSettings: this.guiSettings.state,
       wireguardPublicKey: this.wireguardPublicKey,
+      windowsSplitTunnelingApplications: this.windowsSplitTunnelingApplications,
     }));
 
     IpcMainEventChannel.settings.handleAllowLan((allowLan: boolean) =>
