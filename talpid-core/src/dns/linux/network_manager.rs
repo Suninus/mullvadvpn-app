@@ -68,8 +68,6 @@ const RC_MANAGEMENT_MODE_KEY: &str = "RcManager";
 const DNS_MODE_KEY: &str = "Mode";
 const DNS_FIRST_PRIORITY: i32 = -2147483647;
 
-const NM_DEVICE_STATE_IP_CHECK: u32 = 80;
-const NM_DEVICE_STATE_SECONDARY: u32 = 90;
 const NM_DEVICE_STATE_ACTIVATED: u32 = 100;
 
 lazy_static! {
@@ -413,13 +411,8 @@ impl NetworkManager {
 }
 
 fn device_is_ready(device_state: u32) -> bool {
-    /// Any state above `NM_DEVICE_STATE_IP_CONFIG` is considered to be an OK state to change the
-    /// DNS config. For the enums, see https://developer.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMDeviceState
-    const READY_STATES: [u32; 3] = [
-        NM_DEVICE_STATE_IP_CHECK,
-        NM_DEVICE_STATE_SECONDARY,
-        NM_DEVICE_STATE_ACTIVATED,
-    ];
+    /// For the enums, see https://developer.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMDeviceState
+    const READY_STATES: [u32; 1] = [NM_DEVICE_STATE_ACTIVATED];
     READY_STATES.contains(&device_state)
 }
 
