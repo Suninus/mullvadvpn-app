@@ -122,6 +122,8 @@ impl NetworkManager {
             .map_err(Error::Dbus)?;
 
         match dns_mode.as_ref() {
+            // If systemd-resolved manages DNS, then our config is ignored
+            "systemd-resolved" => return Err(Error::NetworkManagerNotManagingDns),
             // If NetworkManager isn't managing DNS for us, it's useless.
             "none" => return Err(Error::NetworkManagerNotManagingDns),
             _ => (),
